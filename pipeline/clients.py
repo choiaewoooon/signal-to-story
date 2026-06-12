@@ -63,3 +63,63 @@ class FakeImageClient:
         with open(out_path, "w") as f:
             f.write("fake-image")
         return out_path
+
+
+class ClaudeCliClient:
+    """Claude Code CLI 헤드리스(`claude -p`). 별도 API 결제 없이 구독으로 동작 (krx-ai-bot 패턴)."""
+
+    def __init__(self, runner=None):
+        self._runner = runner or _claude_cli_runner
+
+    def complete(self, prompt: str) -> str:
+        return self._runner(prompt)
+
+
+def _claude_cli_runner(prompt: str) -> str:
+    import subprocess
+    result = subprocess.run(
+        ["claude", "-p", prompt],
+        capture_output=True, text=True, timeout=180,
+    )
+    if result.returncode != 0:
+        raise RuntimeError(f"claude CLI failed (exit {result.returncode}): {result.stderr[:200]}")
+    return result.stdout
+
+
+class PlaceholderImageClient:
+    """PIL 캡션 카드 렌더(외부 서비스·키 0). 영상이 '흉내'이듯 콘티도 키리스로 흉내."""
+
+    def generate(self, prompt: str, out_path: str) -> str:
+        from PIL import Image, ImageDraw
+        W, H = 720, 1280  # 9:16
+        img = Image.new("RGB", (W, H), (20, 24, 33))
+        draw = ImageDraw.Draw(img)
+        caption = prompt.split("장면: ")[-1].strip()
+        font = _load_korean_font(44)
+        small = _load_korean_font(26)
+        lines = _wrap(caption, 16)
+        y = H // 2 - len(lines) * 32
+        for line in lines:
+            draw.text((60, y), line, font=font, fill=(235, 238, 245))
+            y += 64
+        draw.text((60, H - 90), "signal-to-story · 콘티(흉내)", font=small, fill=(120, 130, 150))
+        img.save(out_path)
+        return out_path
+
+
+def _load_korean_font(size: int):
+    from PIL import ImageFont
+    for path in [
+        "/System/Library/Fonts/AppleSDGothicNeo.ttc",
+        "/System/Library/Fonts/Supplemental/AppleGothic.ttf",
+        "/Library/Fonts/AppleGothic.ttf",
+    ]:
+        try:
+            return ImageFont.truetype(path, size)
+        except OSError:
+            continue
+    return ImageFont.load_default()
+
+
+def _wrap(text: str, width: int) -> list[str]:
+    return [text[i : i + width] for i in range(0, len(text), width)] or [""]

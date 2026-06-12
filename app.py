@@ -2,15 +2,15 @@ import os
 import streamlit as st
 from dotenv import load_dotenv
 from pipeline.stage1_signal import load_signal
-from pipeline.orchestrator import Pipeline
-from pipeline.clients import ClaudeClient, ImageClient
+from pipeline.factory import make_pipeline, mode_label
 
 load_dotenv()
 st.set_page_config(page_title="signal-to-story", layout="wide")
 st.title("📈 signal-to-story — 투자 콘텐츠 파이프라인 데모")
+st.caption(f"실행 모드 — {mode_label()}")
 
 if "pipe" not in st.session_state:
-    st.session_state.pipe = Pipeline(ClaudeClient(), ImageClient(), out_dir="output/sample_run")
+    st.session_state.pipe = make_pipeline("output/sample_run")
 
 pipe = st.session_state.pipe
 

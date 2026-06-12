@@ -77,12 +77,32 @@ uv sync --group dev
 
 # 테스트 (API 키 불필요, 외부 I/O는 Fake 클라이언트로 목킹)
 uv run pytest -q
-# → 14 passed
+# → 20 passed
 
 # 라이브 실행 (API 키 필요)
 cp .env.example .env   # ANTHROPIC_API_KEY, OPENAI_API_KEY 입력
 uv run streamlit run app.py
 ```
+
+### 키 없이 즉시 실행 (키리스 모드)
+
+API 키가 없어도 바로 실행할 수 있다.
+
+```bash
+uv run streamlit run app.py
+```
+
+`ANTHROPIC_API_KEY` / `OPENAI_API_KEY` 환경 변수가 없으면 앱이 자동으로 **키리스 모드**로 전환된다:
+
+| 역할 | 키 있을 때 | 키 없을 때 |
+|------|-----------|-----------|
+| 대본 생성 | Anthropic API (Claude) | 로컬 `claude` CLI (`claude -p`) |
+| 콘티 이미지 | OpenAI GPT Image | PIL 캡션 카드 (720×1280 흉내 카드) |
+
+- 대본: 로컬에 설치된 Claude Code의 `claude` CLI를 헤드리스로 호출한다. Claude Code 구독이 있으면 별도 API 결제 없이 동작한다.
+- 콘티: PIL로 720×1280 검은 배경에 장면 텍스트를 렌더링한 카드다. 실제 이미지 생성이 아니라 **구조 확인용 흉내 카드**임을 명시한다.
+
+키를 설정하면 (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`) 실제 API로 자동 전환되며, 앱 상단 캡션에 현재 실행 모드가 표시된다.
 
 ---
 
