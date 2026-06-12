@@ -40,8 +40,10 @@ if pipe.report and pipe.state == "AWAITING_APPROVAL":
             st.warning(f'[{f.severity}] “{f.text}” — {f.reason}')
     else:
         st.success("위반 표현 없음")
+    if not pipe.report.passed:
+        st.error("high 위험 플래그가 있어 승인할 수 없습니다. 반려 후 대본을 재생성하세요.")
     col1, col2 = st.columns(2)
-    if col1.button("✅ 승인"):
+    if col1.button("✅ 승인", disabled=not pipe.report.passed):
         pipe.approve(); pipe.resume(); st.rerun()
     if col2.button("⛔ 반려 (대본 재생성)"):
         pipe.reject(); st.rerun()

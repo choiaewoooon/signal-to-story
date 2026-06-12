@@ -47,6 +47,8 @@ class FakeClaudeClient:
 
     def complete(self, prompt: str) -> str:
         self.prompts.append(prompt)
+        if not self._responses:
+            raise IndexError(f"FakeClaudeClient exhausted (no response for prompt: {prompt[:60]!r})")
         return self._responses.pop(0)
 
 

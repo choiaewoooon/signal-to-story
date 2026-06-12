@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 from pipeline.types import Script, ComplianceReport, ComplianceFlag
 
-_PROMPT = Path("prompts/compliance.md").read_text(encoding="utf-8")
+_PROMPT = (Path(__file__).parent.parent / "prompts" / "compliance.md").read_text(encoding="utf-8")
 
 
 def _script_text(script: Script) -> str:
@@ -14,7 +14,9 @@ def build_prompt(script: Script) -> str:
 
 
 def parse_report(raw: str) -> ComplianceReport:
-    data = json.loads(raw.strip().removeprefix("```json").removesuffix("```").strip())
+    s = raw.strip()
+    start, end = s.find("{"), s.rfind("}")
+    data = json.loads(s[start : end + 1])
     flags = [
         ComplianceFlag(text=f["text"], reason=f["reason"], severity=f["severity"])
         for f in data["flags"]

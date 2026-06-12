@@ -20,6 +20,12 @@ def test_parse_script_reads_json():
     assert s.cuts == ["a", "b", "c"]
 
 
+def test_parse_script_tolerates_fenced_and_trailing_text():
+    raw = '```json\n{"hook": "h", "cuts": ["a"], "cta": "c", "disclaimer": "d"}\n```\n설명을 덧붙입니다.'
+    s = parse_script(raw)
+    assert s.hook == "h"
+
+
 def test_generate_script_uses_client(sample_signal):
     raw = json.dumps({
         "hook": "h", "cuts": ["1", "2", "3"], "cta": "c", "disclaimer": "d",

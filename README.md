@@ -25,12 +25,12 @@ Signal → Script → Compliance Gate (HITL) → Storyboard → Conversion
 | **1. Signal** | `pipeline/stage1_signal.py` | `data/sample_signal.json`(합성 데이터)을 로드해 종목·근거·지표를 구조화된 `Signal` 객체로 변환 |
 | **2. Script** | `pipeline/stage2_script.py` | Claude가 15초 숏폼 대본(hook + 3컷 + CTA)을 생성. `prompts/script.md`에 자본시장법 준수 템플릿(수익보장·단정적 매수권유·과장 금지 + 면책 1줄) 내재화 |
 | **3. Compliance Gate** | `pipeline/stage3_compliance.py` | Claude가 대본의 자본시장법 위험 표현을 플래그. `high` 심각도 플래그가 하나라도 있으면 `ComplianceReport.passed = False`. Streamlit에서 사람이 ✅승인 / ⛔반려를 클릭해야만 다음 단계로 진행 |
-| **4. Storyboard** | `pipeline/stage4_storyboard.py` | GPT Image 2가 4장의 콘티 프레임(hook + 3컷)을 생성해 `output/sample_run/`에 저장. **영상은 이 콘티 단계에서 흉내내며**, 실제 배포 시 각 프레임이 Veo 3.1 Lite(image-to-video)로 넘어간다 |
+| **4. Storyboard** | `pipeline/stage4_storyboard.py` | OpenAI GPT Image (`gpt-image-1`)가 4장의 콘티 프레임(hook + 3컷)을 생성해 `output/sample_run/`에 저장. **영상은 이 콘티 단계에서 흉내내며**, 실제 배포 시 각 프레임이 Veo 3.1 Lite(image-to-video)로 넘어간다 |
 | **5. Conversion** | `pipeline/stage5_conversion.py` | CTA 문구 + 딥링크(UTM 파라미터 포함) + Watchtime/CTR/Conversion 지표 정의(목업 수치)를 설계. 조회수가 아닌 **앱 내 전환**을 끝점으로 설계 |
 
 오케스트레이션: `pipeline/orchestrator.py`의 `Pipeline` 클래스가 상태(`INIT → AWAITING_APPROVAL → APPROVED/REJECTED → DONE`)를 관리하고, Streamlit(`app.py`)이 UI 껍데기로 감싼다.
 
-> **콘티 이미지 샘플:** 로컬에서 `.env`에 키 입력 후 `streamlit run app.py`를 1회 완주하면 `output/sample_run/`에 콘티가 생성됩니다.
+> **콘티 이미지 샘플:** 로컬에서 `.env`에 키 입력 후 `streamlit run app.py`를 1회 완주하면 `output/sample_run/`에 콘티가 생성됩니다. 생성 이미지는 `.gitignore`로 커밋에서 제외되므로 직접 실행해 확인하세요.
 
 ---
 
@@ -42,7 +42,7 @@ Signal → Script → Compliance Gate (HITL) → Storyboard → Conversion
 | 역할 | 선택 | 이유 |
 |------|------|------|
 | 대본·컴플라이언스 | **Claude** | 한국어 금융 텍스트 생성 + 규제 리스크 판단 |
-| 콘티 이미지 | **GPT Image 2** | 2026.6 이미지 아레나 1위, 지시 이해 정확도 최강 |
+| 콘티 이미지 | **OpenAI GPT Image (`gpt-image-1`)** | 2026.6 이미지 아레나 1위, 지시 이해 정확도 최강 |
 | 영상화 | **Veo 3.1 Lite** (설계만) | 9:16 네이티브 비율·음성 포함·image-to-video·저비용 |
 | 음성 | **Supertone** (스코프 밖) | 한국어 TTS는 토종 특화 모델 우위 |
 | 글루 | **Python** | 재현·버전관리·"직접 빌드" 증거 |

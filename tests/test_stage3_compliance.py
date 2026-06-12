@@ -28,6 +28,12 @@ def test_parse_report_empty_passes():
     assert rep.passed is True
 
 
+def test_parse_report_tolerates_trailing_text():
+    raw = '여기 결과입니다:\n{"flags": []}\n이상입니다.'
+    rep = parse_report(raw)
+    assert rep.passed is True
+
+
 def test_check_uses_client():
     raw = json.dumps({"flags": []})
     client = FakeClaudeClient([raw])
